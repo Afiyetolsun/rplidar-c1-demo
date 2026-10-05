@@ -1,0 +1,23 @@
+node_modules/
+.deps/
+dist/
+release/
+coverage/
+.env
+.env.*
+.DS_Store
+*.log
+# Never publish real scans, captures or local device data.
+src/client/public/
+local-scans/
+captures/
+logs/
+*.ply
+*.pcd
+*.spz
+*.splat
+*.ksplat
+*.glb
+*.obj
+*.bag
+*.db3

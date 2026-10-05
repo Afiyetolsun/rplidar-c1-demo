@@ -1,0 +1,44 @@
+{
+  "name": "rplidar-c1-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local SLAMTEC RPLIDAR C1 scan viewer with motion tracking and proximity beeps",
+  "license": "MIT",
+  "author": {
+    "name": "Alex",
+    "url": "https://www.moonscape.party/"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n server,web \"tsx watch src/server/index.ts\" \"vite\"",
+    "setup:lidar": "bash scripts/setup-lidar.sh",
+    "build": "vite build && tsc -p tsconfig.server.json",
+    "start": "node dist/server/server/index.js",
+    "test": "node --import tsx --test src/server/*.test.ts src/*.test.ts",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
+    "check": "npm test && npm run typecheck && npm run build",
+    "check:privacy": "node scripts/check-privacy.mjs",
+    "release": "npm run check && node scripts/release.mjs"
+  },
+  "dependencies": {
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/dm-mono": "^5.3.0",
+    "express": "^5.1.0",
+    "serialport": "^13.0.0",
+    "three": "^0.180.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.5.2",
+    "@types/three": "^0.180.0",
+    "@types/ws": "^8.18.1",
+    "concurrently": "^9.2.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7"
+  }
+}
