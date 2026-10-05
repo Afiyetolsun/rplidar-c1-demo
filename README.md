@@ -8,6 +8,10 @@ The dark scan view, red contact trails, green visual sweep, and proximity sound 
 
 [Hardware specifications](https://www.slamtec.com/en/c1/spec) · [SLAMTEC support and manuals](https://www.slamtec.com/en/support)
 
+![RPLIDAR C1 demo interface with a synthetic scan, proximity readout, and connection and sound controls](docs/demo-interface.jpg)
+
+*Interface preview in synthetic DEMO mode. The room and contact are generated in code; no real room scans are shown.*
+
 ## Try it without hardware
 
 Install **Node.js 22.12 or newer** and npm, then run from this folder:

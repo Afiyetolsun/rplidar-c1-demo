@@ -1,7 +1,8 @@
 import { readdir, readFile, lstat } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { sourceFiles } from './source-files.mjs';
+import { sourceFiles, reviewedImages } from './source-files.mjs';
 
 export async function checkPrivacy() {
   const allowed = new Set(sourceFiles);
@@ -21,6 +22,12 @@ export async function checkPrivacy() {
     try {
       if (!(await lstat(file)).isFile()) { failures.push(`${file}: not a regular file`); continue; }
       const bytes = await readFile(file);
+      if (Object.hasOwn(reviewedImages, file)) {
+        if (createHash('sha256').update(bytes).digest('hex') !== reviewedImages[file]) {
+          failures.push(`${file}: image differs from the reviewed synthetic screenshot`);
+        }
+        continue;
+      }
       if (bytes.includes(0)) failures.push(`${file}: binary content`);
       // Check contents without printing potentially sensitive matched values.
       const content = bytes.toString('utf8');

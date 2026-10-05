@@ -4,4 +4,4 @@ The application uses npm packages installed from `package-lock.json`: Three.js (
 
 The C1 bridge links the [SLAMTEC RPLIDAR SDK](https://github.com/Slamtec/rplidar_sdk), downloaded separately by `setup:lidar`. Its license is reproduced in `SLAMTEC-SDK-LICENSE.txt` and copied next to the compiled bridge. If distributing the compiled bridge, include that notice and the application MIT license along with any notices required by dependencies in your distribution.
 
-No manufacturer firmware, scan recordings, images, audio files, or third-party scene assets are bundled. Fontsource packages supply the interface fonts locally, including their upstream license files.
+No manufacturer firmware, scan recordings, audio files, or third-party scene assets are bundled. Documentation includes one screenshot of the application's synthetic DEMO interface. Fontsource packages supply the interface fonts locally, including their upstream license files.
