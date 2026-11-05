@@ -19,9 +19,10 @@
     "start": "node dist/server/server/index.js",
     "test": "node --import tsx --test src/server/*.test.ts src/*.test.ts",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
-    "check": "npm test && npm run typecheck && npm run build",
+    "check": "npm test && npm run test:firefly && npm run typecheck && npm run build",
     "check:privacy": "node scripts/check-privacy.mjs",
-    "release": "npm run check && node scripts/release.mjs"
+    "release": "npm run check && node scripts/release.mjs",
+    "test:firefly": "bash scripts/test-firefly.sh"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.3.0",

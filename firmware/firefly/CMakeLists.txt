@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.16)
+if(NOT "$ENV{FIREFLY_BOARD}" STREQUAL "waveshare")
+set(EXTRA_COMPONENT_DIRS "$ENV{FIREFLY_DISPLAY_DIR}")
+endif()
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+project(firefly_heartbeat)

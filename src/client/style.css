@@ -78,3 +78,12 @@ footer a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; 
 @media (max-width: 760px) { header { min-height: 72px; } header > span { display: none; } .instrument { display: block; } .scan-side { padding: 0; border-right: 0; } .readout { padding: 0 0 24px; border-top: 1px solid var(--line); } .stage { height: 420px; } .scan-heading { flex-direction: row; align-items: center; justify-content: space-between; } .scene-controls label { margin-left: 0; } .distance { font-size: 80px; } footer span { font-size: 10px; } }
 @media (max-width: 400px) { .stage { height: 340px; } .stage-label { max-width: calc(100% - 32px); } .scan-heading { flex-direction: column; align-items: start; } .scene-controls { gap: 6px; } .scene-controls button { padding: 8px; font-size: 10px; } .telemetry strong { font-size: 13px; } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+.room-controls { border-top: 1px solid var(--line); padding: 14px 0; }
+.room-controls summary { color: var(--accent); cursor: pointer; font-size: 12px; padding: 8px 0; }
+.room-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+.room-actions label { color: var(--muted); font-size: 11px; }
+.room-inputs { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+.room-inputs label { display: grid; gap: 8px; color: var(--muted); font-size: 11px; }
+.room-inputs input[type=number] { width: 100%; min-width: 0; background: #050d12; color: #dffbea; border: 1px solid var(--line); padding: 8px; font: inherit; }
+.clean .room-controls { display: none; }
+@media (max-width: 760px) { .room-inputs { grid-template-columns: repeat(2,minmax(0,1fr)); } }

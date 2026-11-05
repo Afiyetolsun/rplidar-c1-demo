@@ -4,7 +4,7 @@ A local browser demo for the **SLAMTEC RPLIDAR C1**: see a live 360° scan, foll
 
 Created by **Alex**, founder of [Lagodish Tech](https://www.moonscape.party/).
 
-The dark scan view, red contact trails, green visual sweep, and proximity sound come from the original experiment. This standalone version supports **C1 only**. It contains no room recordings, personal point clouds, camera imagery, or recorded sensor sessions.
+The dark scan view, red contact trails, green visual sweep, and proximity sound come from the original experiment. This standalone version supports **C1 only**. No room recordings, personal point clouds, camera imagery, or recorded sensor sessions are included in the source release.
 
 [Hardware specifications](https://www.slamtec.com/en/c1/spec) · [SLAMTEC support and manuals](https://www.slamtec.com/en/support)
 
@@ -25,6 +25,31 @@ Open **http://127.0.0.1:5174**. The initial **DEMO** mode uses a rectangle and a
 
 No SDK, serial adapter, or hardware is needed for DEMO. Drag to orbit the scene, scroll to zoom, or choose **TOP VIEW**. **CLEAN FRAME** hides the controls for screen recording; press Esc to exit.
 
+## Handheld display
+
+![Waveshare ESP32-S3 1.47 inch display running this firmware, with one contact 0.54 m to the right](docs/waveshare-display.jpg)
+
+*Waveshare ESP32-S3-LCD-1.47B, the board to buy. Its 1.47 inch 172×320 panel shows one contact at 0.54 m, 87° to the right. Distance and direction come from the C1 attached to the computer.*
+
+![Firefly Pixie running this firmware, with one contact at 3.55 m in front of the sensor](docs/firefly-display.jpg)
+
+*A Firefly Pixie, 240×240, if you already have one. It uses a separate firmware image.*
+
+The display shows the live C1 scan, the nearest contact, and proximity LED pulses. The LiDAR stays on this computer over USB. The browser and control APIs stay on loopback. Buy a [Waveshare ESP32-S3-LCD-1.47B](https://www.waveshare.com/ESP32-S3-LCD-1.47B.htm): ESP32-S3, a 172×320 display, one RGB LED, and BOOT to change range. A Firefly Pixie (ESP32-C3, 240×240, four buttons, four LEDs) also works, but it is hard to find. Each board has its own image, and the flash script refuses the wrong chip.
+
+The ESP32 needs a **2.4 GHz** network. A 5 GHz-only name will not connect. From the repository root, with Docker running:
+
+```bash
+python3 -m venv .deps/esp-tools
+.deps/esp-tools/bin/pip install esptool pyserial
+bash scripts/build-waveshare.sh
+bash scripts/flash-waveshare.sh /dev/cu.usbmodem...
+.deps/esp-tools/bin/python scripts/provision-firefly.py --port /dev/cu.usbmodem... --mac-dialog
+FIREFLY_CONFIG=.deps/firefly-device.json C1_LIDAR_PORT=/dev/cu.usbserial-... npm run dev
+```
+
+Use the Espressif port for the board (`/dev/cu.usbmodem…` on macOS, often `/dev/ttyACM0` on Linux). Use the LiDAR adapter for `C1_LIDAR_PORT` (`/dev/cu.usbserial-…` or `/dev/ttyUSB0`). The setup script asks for the 2.4 GHz network name and password. On Linux, omit `--mac-dialog` and answer in the terminal. The password is stored only on the board. Pairing is saved in `.deps/firefly-device.json`, which is not committed. Open http://127.0.0.1:5174. After setup the display only needs USB power. Pins, the Pixie image, and the packet format are in [firmware, setup and controls](firmware/firefly/README.md).
+
 ## Supported hardware
 
 - **SLAMTEC RPLIDAR C1**, with its USB serial adapter and a data-capable USB cable. Use the adapter/cabling specified by SLAMTEC for the C1 development kit.
@@ -32,7 +57,7 @@ No SDK, serial adapter, or hardware is needed for DEMO. Drag to orbit the scene,
 - This application's bridge setup supports **macOS and Linux**. Native Windows is not supported by the supplied POSIX setup script and bridge, even though the upstream SDK supports Windows.
 - Other RPLIDAR models, TI mmWave radars, cameras, and external LiDAR frame adapters are outside this project's scope.
 
-C1 is a **2D** sensor. The live view shows a horizontal scan plane in a 3D viewer; it does not reconstruct a volumetric room. Gray synthetic walls appear only in DEMO. In LIVE C1, the geometry comes only from current sensor returns. The rotating green sweep is a visual effect, not a measurement of scan timing.
+C1 is a **2D** sensor. The live view shows a horizontal scan plane in a 3D viewer; it does not reconstruct a volumetric room. Gray synthetic walls appear only in DEMO. In LIVE C1, geometry comes from current sensor returns. The rotating green sweep is a visual effect, not a measurement of scan timing.
 
 ## Connect a real C1
 
@@ -97,7 +122,7 @@ The sound retains the original triangle-wave pitch envelope and pulse curve: app
 
 ## Privacy and publication
 
-- No real room assets are shipped, loaded automatically, or accepted through a file-upload interface.
+- No real room assets are shipped or accepted through a file-upload interface.
 - There is no capture/export endpoint, recording to disk, cloud service, analytics, remote font request, or remote scene fetch.
 - Live frames, tracking history, and background calibration exist only in memory. Disconnect resets the background. Restarting or reconnecting requires learning again.
 - Browser storage holds only sound preference and volume. It stores no points, room placement, USB path, or device serial number. The bridge and API omit hardware serial numbers.
@@ -128,7 +153,7 @@ API smoke tests use an OS-assigned loopback port, so checks can run while the de
 ```bash
 npm test                # Synthetic tracker and proximity tests; local API/WS smoke tests
 npm run typecheck       # Client and server TypeScript
-npm run check           # Tests, types, production build
+npm run check           # Tests, Firefly renderer, types, production build
 npm run check:privacy   # Source allowlist and private-data marker check
 npm run release         # Verified source archive for sharing
 ```
@@ -149,7 +174,7 @@ GitHub Actions runs the checks on Node.js 22. Hardware tests are deliberately se
 
 ## Source layout
 
-`src/client/` contains the viewer and Web Audio controls. `src/demo.ts` generates the synthetic scene's scan. `src/server/rplidar.ts` supervises the C++ bridge; `lidar-tracker.ts` learns background and confirms motion. `scripts/rplidar_bridge.cpp` uses SLAMTEC's SDK to decode C1 scans. `src/shared.ts` defines the local frame protocol (metres: X right, Y forward, Z up; C1 has Z = 0).
+`src/client/` contains the viewer and Web Audio controls. `src/demo.ts` generates the synthetic scene's scan. `src/server/rplidar.ts` supervises the C++ bridge; `lidar-tracker.ts` learns background and confirms motion. `scripts/rplidar_bridge.cpp` uses SLAMTEC's SDK to decode C1 scans. `firmware/firefly/` is the handheld display; build the Waveshare ESP32-S3 image unless you already have a Pixie. `src/shared.ts` defines the local frame protocol (metres: X right, Y forward, Z up; C1 has Z = 0).
 
 ## Author and company
 
@@ -159,4 +184,4 @@ Explore the company's projects and services at [moonscape.party](https://www.moo
 
 ## License
 
-Application code is licensed under [MIT](LICENSE). The upstream SLAMTEC SDK is downloaded separately and keeps its own [BSD-style license](docs/SLAMTEC-SDK-LICENSE.txt). See [third-party notices](docs/THIRD_PARTY_NOTICES.md). This is an independent demo, not an official SLAMTEC application.
+Application code is licensed under [MIT](LICENSE). The upstream SLAMTEC SDK is downloaded separately and keeps its own [BSD-style license](docs/SLAMTEC-SDK-LICENSE.txt). ESP-IDF and the Firefly display driver are downloaded at build time and keep their own licenses. See [third-party notices](docs/THIRD_PARTY_NOTICES.md). This is an independent demo, not an official SLAMTEC, Waveshare, or Firefly application.

@@ -13,6 +13,13 @@ local-scans/
 captures/
 logs/
 *.ply
+*.alignment.json
+firefly-device.json
+firefly-devices.json
+firefly-second.json
+firefly-original.bin
+sdkconfig
+sdkconfig.old
 *.pcd
 *.spz
 *.splat

@@ -1,0 +1,6 @@
+if("$ENV{FIREFLY_BOARD}" STREQUAL "waveshare")
+idf_component_register(SRCS "main.c" "radar-ui.c" "waveshare_panel.c" INCLUDE_DIRS "." REQUIRES esp_lcd esp_driver_spi esp_driver_gpio esp_wifi esp_netif nvs_flash esp_event esp_driver_usb_serial_jtag esp_driver_rmt esp_timer json)
+target_compile_definitions(${COMPONENT_LIB} PRIVATE BOARD_WAVESHARE RADAR_WIDTH=172 RADAR_HEIGHT=320)
+else()
+idf_component_register(SRCS "main.c" "radar-ui.c" INCLUDE_DIRS "." REQUIRES firefly-display esp_wifi esp_netif nvs_flash esp_event esp_driver_gpio esp_driver_usb_serial_jtag esp_driver_rmt esp_timer json)
+endif()

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { attachRoom } from './room';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { LidarFrame, LidarStatus } from '../shared';
 import { STALE_MS } from '../shared';
@@ -23,6 +24,12 @@ app.innerHTML = `
         <div class="scan-caption"><span id="bearing">000° · ID 01</span><span id="scanDistance">4.80 m</span></div>
       </div>
       <div class="scene-controls"><button id="topView" aria-pressed="false">TOP VIEW</button><button id="resetView">RESET VIEW</button><button id="cleanFrame">CLEAN FRAME</button><label>RADIUS <select id="radius"><option value="3">3 m</option><option value="6" selected>6 m</option><option value="12">12 m</option></select></label></div>
+      <details id="roomControls" class="room-controls" hidden>
+        <summary>POINT CLOUD · ROOM PLACEMENT</summary>
+        <div class="room-actions"><button id="roomToggle" disabled aria-pressed="false">LOADING ROOM</button><label><input id="roomCut" type="checkbox" checked> HIDE CEILING</label><button id="roomReset">RESET PLACEMENT</button></div>
+        <div class="room-inputs"><label>ROOM X · m<input id="roomX" type="number" min="-20" max="20" step="0.1" value="0"></label><label>ROOM Z · m<input id="roomZ" type="number" min="-20" max="20" step="0.1" value="0"></label><label>ROOM TURN · °<input id="roomYaw" type="number" step="5" value="0"></label><label>SENSOR HEIGHT · m<input id="roomHeight" type="number" min="0" max="4" step="0.1" value="1"></label><label>POINT SIZE<input id="roomSize" type="range" min="0.01" max="0.06" step="0.002" value="0.026"></label><label>BRIGHTNESS<input id="roomOpacity" type="range" min="0.1" max="1" step="0.05" value="0.55"></label></div>
+        <p id="roomStatus" role="status"></p>
+      </details>
       <p class="scan-note" id="scanNote">Drag to orbit · scroll to zoom · sweep is a visual effect.</p>
     </section>
     <section class="readout" aria-label="Proximity and connection controls">
@@ -88,6 +95,13 @@ const sensor = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.12, 24), ne
 const sweep = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0.03, -6)]), new THREE.LineBasicMaterial({ color: '#b6ff63', transparent: true, opacity: 0.6 })); scene.add(sweep);
 const histories = new Map<number, THREE.Vector3[]>();
 let mode: 'demo' | 'live' = 'demo';
+let roomVisible = false;
+let roomAligned = false;
+function updateSceneLabel() {
+  renderer.domElement.setAttribute('aria-label', `LiDAR scan: ${roomVisible ? 'recorded point cloud room' : mode === 'demo' ? 'synthetic room' : 'live scan plane'}, green scan returns, red confirmed contacts`);
+  syntheticRoom.visible = mode === 'demo' && !roomVisible;
+  el('sceneLabel').textContent = roomVisible ? `RECORDED ROOM + ${mode === 'live' ? 'LIVE C1' : 'DEMO'} · ${roomAligned ? 'SCAN ALIGNED' : 'MANUAL ALIGNMENT'}` : mode === 'demo' ? 'PROCEDURAL ROOM · NO RECORDED DATA' : 'LIVE 2D SCAN · SENSOR ORIGIN';
+}
 let frame: LidarFrame | undefined;
 let status: LidarStatus | undefined;
 let connectedToServer = false;
@@ -153,11 +167,11 @@ function updateReadout() {
 }
 function setMode(next: 'demo' | 'live') {
   mode = next; playingAt = undefined; frame = undefined; stopAudio(); clearGeometry();
-  syntheticRoom.visible = next === 'demo';
+  updateSceneLabel();
   el('demoControls').hidden = next !== 'demo'; el('liveControls').hidden = next !== 'live';
   for (const name of ['demo', 'live']) { el(`${name}Mode`).classList.toggle('selected', name === next); el(`${name}Mode`).setAttribute('aria-pressed', String(name === next)); }
   el('source').textContent = next === 'demo' ? 'DEMO / SYNTHETIC SCENE' : 'LIVE / RPLIDAR C1';
-  el('sceneLabel').textContent = next === 'demo' ? 'PROCEDURAL ROOM · NO RECORDED DATA' : 'LIVE 2D SCAN · SENSOR ORIGIN';
+  updateSceneLabel();
   el('approach').textContent = 'PLAY APPROACH · 12 SEC';
   lastDemoAt = 0; updateReadout(); if (next === 'live') void refreshPorts();
 }
@@ -270,3 +284,7 @@ el('cleanFrame').onclick = () => cleanFrame(true); el('exitClean').onclick = () 
 document.addEventListener('keydown', event => { if (event.key === 'Escape') cleanFrame(false); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') stopAudio(); });
 updateSound();
+
+void attachRoom(scene, renderer, (shown, aligned) => { roomVisible = shown; roomAligned = aligned; updateSceneLabel(); });
+if (new URLSearchParams(location.search).get('live') === '1') setMode('live');
+if (new URLSearchParams(location.search).get('clean') === '1') cleanFrame(true);
